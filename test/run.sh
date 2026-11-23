@@ -19,8 +19,8 @@ cleanup() {
 trap cleanup EXIT
 
 echo "== версия n8n одна в compose.yaml и deploy/cloud-init.yaml"
-local_image=$(grep -oE 'docker\.n8n\.io/n8nio/n8n:[0-9.]+' compose.yaml)
-cloud_image=$(grep -oE 'docker\.n8n\.io/n8nio/n8n:[0-9.]+' deploy/cloud-init.yaml)
+local_image=$(grep -oE 'image: n8nio/n8n:[0-9.]+' compose.yaml)
+cloud_image=$(grep -oE 'image: n8nio/n8n:[0-9.]+' deploy/cloud-init.yaml)
 if [ "$local_image" != "$cloud_image" ]; then
   echo "версии расходятся: compose.yaml $local_image, cloud-init.yaml $cloud_image" >&2
   exit 1

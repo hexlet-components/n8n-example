@@ -24,7 +24,7 @@ write_files:
     content: |
       services:
         n8n:
-          image: docker.n8n.io/n8nio/n8n:2.48.5
+          image: n8nio/n8n:2.48.5
           restart: unless-stopped
           environment:
             N8N_HOST: ${N8N_HOST}
