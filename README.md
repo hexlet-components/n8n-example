@@ -1,38 +1,119 @@
 <div align="center">
 
-<a href="https://hexlet.io/?utm_source=github&utm_medium=link&utm_campaign=component-template">
+<a href="https://hexlet.io/?utm_source=github&utm_medium=link&utm_campaign=n8n-example">
     <picture>
         <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Hexlet/brand-assets/master/images/svg/hexlet_wordmark_white_rus.svg">
         <img src="https://raw.githubusercontent.com/Hexlet/brand-assets/master/images/svg/hexlet_wordmark_primary_rus.svg" alt="Хекслет" height="64">
     </picture>
 </a>
 
-# component-template
+# Свой n8n для учёбы
 
-[![CI](https://github.com/hexlet-components/component-template/actions/workflows/main.yml/badge.svg)](https://github.com/hexlet-components/component-template/actions/workflows/main.yml)
-[![Check](https://github.com/hexlet-components/component-template/actions/workflows/check.yml/badge.svg)](https://github.com/hexlet-components/component-template/actions/workflows/check.yml)
+[![CI](https://github.com/hexlet-components/n8n-example/actions/workflows/main.yml/badge.svg)](https://github.com/hexlet-components/n8n-example/actions/workflows/main.yml)
+[![Check](https://github.com/hexlet-components/n8n-example/actions/workflows/check.yml/badge.svg)](https://github.com/hexlet-components/n8n-example/actions/workflows/check.yml)
 
 </div>
 
-Компонент создаёт и поддерживает команда [Хекслета](https://hexlet.io/?utm_source=github&utm_medium=link&utm_campaign=component-template), образовательного проекта.
+Компонент создаёт и поддерживает команда [Хекслета](https://hexlet.io/?utm_source=github&utm_medium=link&utm_campaign=n8n-example), образовательного проекта.
 
-> Шаблон репозиториев hexlet-components. Новый репозиторий создаётся командой ниже, а после клона его настраивает раздел «Первая настройка» в [AGENTS.md](AGENTS.md). Настройка заменяет `component-template` в этом файле именем репозитория, заполняет разделы и удаляет эту цитату.
->
-> ```sh
-> gh repo create hexlet-components/<имя> --public --template hexlet-components/component-template --description "<что это и для какого курса>"
-> ```
+Здесь лежит настроенный n8n для программы «AI-автоматизация». В курсе n8n он работает на вашем компьютере в Docker, а к проекту «Автоматизация воронки лидов» переезжает на машину в Яндекс Облаке. В обоих местах стоит одна и та же версия n8n, поэтому сценарий, собранный дома, работает в облаке без правок.
 
-Что это и для какого курса, проекта или программы Хекслета. Одним-двумя абзацами: кто пользуется компонентом (студент в уроке, проверка практики, стенд проекта) и что сломается у них, если его поменять.
+Своя установка n8n бесплатна и не ограничена по времени и числу запусков. Сценарии и подключения хранятся в вашей копии и не пропадают вместе с пробным аккаунтом.
 
-## Запуск
+## Что понадобится
+
+- [Docker](https://github.com/Hexlet/ru-instructions/blob/main/docker.md) для работы на своём компьютере.
+- [mise](https://github.com/Hexlet/ru-instructions/blob/main/mise.md), если хотите короткие команды вида `make up`. Без него те же действия выполняются командами `docker compose`, они приведены рядом.
+- Аккаунт в [Яндекс Облаке](https://console.yandex.cloud), когда дойдёте до проекта.
+
+## Запуск на своём компьютере
+
+```sh
+git clone https://github.com/hexlet-components/n8n-example.git
+cd n8n-example
+make up
+```
+
+Без mise запуск выглядит так.
+
+```sh
+docker compose up --detach --wait
+```
+
+После запуска n8n открывается по адресу <http://localhost:5678>. При первом входе он попросит завести владельца: почту, имя и пароль. Это учётная запись вашей копии n8n, никуда за пределы компьютера она не уходит.
+
+Остановка сохраняет всё, что вы собрали. Следующий `make up` поднимает n8n с теми же сценариями и подключениями.
+
+| Задача | Команда mise | Команда Docker |
+| --- | --- | --- |
+| Запустить | `make up` | `docker compose up --detach --wait` |
+| Остановить | `make down` | `docker compose down` |
+| Журнал n8n | `make logs` | `docker compose logs --follow n8n` |
+| Выгрузить сценарии в `workflows/` | `make export` | см. раздел «Перенос сценариев» |
+| Загрузить сценарии из `workflows/` | `make import` | см. раздел «Перенос сценариев» |
+| Загрузить контрольную точку урока | `LESSON=<слаг> make seed` | см. раздел «Контрольные точки курса» |
+| Удалить все данные n8n | `make reset` | `docker compose down --volumes` |
+
+`make reset` удаляет сценарии, подключения и владельца без возможности вернуть. Перед ним выгрузите сценарии.
+
+### Что локально работает иначе
+
+- Адрес `localhost` виден только вам. Форма n8n и тестовые вебхуки работают в вашем браузере, а чужой сервис до вашего n8n не достучится. Для вебхуков из интернета нужна машина в облаке.
+- Готовых кредитов на модели (Gateway credits) у своей установки нет, они есть только в облачном n8n. Для ИИ-нод подключите модель по своему ключу, например из Yandex AI Studio.
+
+## Контрольные точки курса
+
+Курс n8n собирает один сквозной сценарий обработки заявок, и каждый урок его продолжает. Если сценарий сломался или урок пропущен, загрузите его состояние к началу нужного урока. Урок задаётся слагом из адреса его страницы.
+
+```sh
+LESSON=data-between-nodes make seed
+```
+
+Каталог [seeds](seeds) хранит точку для каждого урока, где она есть. Сценарий в точке совпадает с примером из теории урока. Решений самостоятельных работ и проекта там нет.
+
+Загрузка заменяет сценарий с тем же id. Если в нём есть ваши правки, сначала выгрузите его задачей `make export`.
+
+## Перенос сценариев
+
+Сценарии переносятся файлами. Задача `export` кладёт каждый сценарий отдельным JSON-файлом в каталог `workflows/`, а `import` загружает их обратно. Сценарий с тем же id при загрузке заменяется.
+
+```sh
+make export
+make import
+```
+
+В файлах сценариев нет ключей и паролей, там только имена подключений. После переноса на другую машину подключения заводятся заново, и ноды выбирают их из списка.
+
+В облачный n8n сценарий загружается через интерфейс. В меню сценария есть пункт `Import from File`, он принимает файл из `workflows/`.
+
+## Развёртывание в Яндекс Облаке
+
+На машине работает тот же n8n, а перед ним Caddy. Caddy сам получает сертификат, и n8n открывается по HTTPS на адресе вида `https://51-250-10-20.sslip.io`, где цифры это публичный IP машины. Свой домен для этого не нужен.
+
+Машину настраивать руками не нужно. Файл [deploy/cloud-init.yaml](deploy/cloud-init.yaml) это сценарий первого запуска, облако выполняет его само.
+
+1. В консоли Яндекс Облака создайте виртуальную машину с Ubuntu 26.04 LTS, диском HDD на 20 ГБ и конфигурацией Shared-core с 2 vCPU 20% и 2 ГБ памяти. Резервное копирование выключите, оно платное.
+2. В разделе «Метаданные» добавьте поле с ключом `user-data` и вставьте в значение содержимое _deploy/cloud-init.yaml_ целиком.
+3. Сделайте публичный IP машины статическим. Иначе после остановки машины адрес и сертификат сменятся.
+4. Проверьте, что в группе безопасности открыты входящие порты 80 и 443. Через них Caddy получает сертификат.
+5. Через три-четыре минуты после запуска откройте `https://<ip-через-дефисы>.sslip.io` и заведите владельца.
+
+Ход первого запуска виден в серийной консоли машины, последняя строка называет адрес n8n. Если n8n не открылся, начните с проверки портов.
+
+Машина должна работать постоянно, иначе не сработают сценарии по расписанию. Прерываемая машина для этого не подходит, облако останавливает её через сутки.
+
+Консоль просит логин и SSH-ключ в разделе «Доступ», но при своём `user-data` этот ключ на машину не попадает. Чтобы заходить на машину по SSH, раскомментируйте блок `users` в начале _deploy/cloud-init.yaml_ и впишите свой открытый ключ до создания машины.
+
+### Ограничения облака
+
+Из Яндекс Облака не отвечают адреса Telegram, проверено 18.11.2026. Нода Telegram на такой машине отправить сообщение не сможет. Локальный n8n до Telegram достаёт.
+
+## Для разработчиков компонента
 
 ```sh
 mise run setup
+mise run check
 mise run test
 ```
 
-`make <задача>` вызывает ту же задачу mise.
-
-## Проверки
-
-`mise run check` гоняет тот же набор, что CI: разметку, опечатки, ссылки, workflows и проверки стека.
+`mise run check` гоняет тот же набор, что CI: разметку, опечатки, ссылки, workflows и схемы `compose.yaml` и _deploy/cloud-init.yaml_. `mise run test` поднимает n8n в отдельном проекте compose, загружает каждую контрольную точку из `seeds/`, запускает её сценарий и сверяет результат с _test/expected/<урок>.json_. Затем он проверяет выгрузку и загрузку и удаляет контейнер с данными. Он же проверяет, что версия n8n в `compose.yaml` и в _deploy/cloud-init.yaml_ одна.

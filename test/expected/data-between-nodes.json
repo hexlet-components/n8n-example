@@ -1,0 +1,5 @@
+{
+  "workflow": "applications0001",
+  "node": "Поля заявки",
+  "json": { "name": "Марина", "city": "Казань", "interest": "Дизайн" }
+}

@@ -7,19 +7,83 @@ node = "26"
 "npm:@commitlint/cli" = "latest"
 "npm:@commitlint/config-conventional" = "latest"
 pkl = "latest"
+"pipx:check-jsonschema" = "latest"
 rumdl = "latest"
 typos = "latest"
+uv = "latest"
+yq = "latest"
 
 # Задачи проекта живут здесь, Makefile только проксирует make <задача> в mise run.
-# Первая настройка (AGENTS.md) ставит зависимости стека в setup перед hk install
-# и заполняет test.
+# Имя проекта compose задаёт N8N_EXAMPLE_PROJECT, по умолчанию это имя каталога.
+# Каталог выгрузки сценариев задаёт N8N_EXAMPLE_DIR, по умолчанию workflows.
 [tasks.setup]
-description = "Поставить зависимости и git-хуки"
+description = "Поставить git-хуки"
 run = ["hk install"]
 
+[tasks.up]
+description = "Запустить n8n на http://localhost:5678 и дождаться готовности"
+run = '''
+docker compose ${N8N_EXAMPLE_PROJECT:+--project-name "$N8N_EXAMPLE_PROJECT"} up --detach --wait
+echo "n8n: http://localhost:5678"
+'''
+
+[tasks.down]
+description = "Остановить n8n, сценарии и подключения сохраняются"
+run = 'docker compose ${N8N_EXAMPLE_PROJECT:+--project-name "$N8N_EXAMPLE_PROJECT"} down'
+
+[tasks.reset]
+description = "Остановить n8n и удалить все его данные: сценарии, подключения, владельца"
+run = 'docker compose ${N8N_EXAMPLE_PROJECT:+--project-name "$N8N_EXAMPLE_PROJECT"} down --volumes'
+
+[tasks.logs]
+description = "Показать журнал n8n"
+run = 'docker compose ${N8N_EXAMPLE_PROJECT:+--project-name "$N8N_EXAMPLE_PROJECT"} logs --follow n8n'
+
+[tasks.export]
+description = "Выгрузить все сценарии в каталог workflows, по файлу на сценарий"
+run = '''
+set -eu
+compose="docker compose ${N8N_EXAMPLE_PROJECT:+--project-name $N8N_EXAMPLE_PROJECT}"
+dir="${N8N_EXAMPLE_DIR:-workflows}"
+$compose exec -T n8n sh -c 'rm -rf /tmp/export && n8n export:workflow --all --separate --pretty --output=/tmp/export/'
+rm -rf "$dir"
+$compose cp n8n:/tmp/export "$dir"
+echo "сценарии выгружены в $dir"
+'''
+
+[tasks.import]
+description = "Загрузить сценарии из каталога workflows, одноимённые по id заменяются"
+run = '''
+set -eu
+compose="docker compose ${N8N_EXAMPLE_PROJECT:+--project-name $N8N_EXAMPLE_PROJECT}"
+dir="${N8N_EXAMPLE_DIR:-workflows}"
+$compose exec -T n8n rm -rf /tmp/import
+$compose cp "$dir" n8n:/tmp/import
+$compose exec -T n8n n8n import:workflow --separate --input=/tmp/import/
+'''
+
+[tasks.seed]
+description = "Загрузить контрольную точку урока: LESSON=<слаг урока> make seed"
+run = '''
+set -eu
+if [ -z "${LESSON:-}" ]; then
+  echo "укажите урок: LESSON=<слаг> make seed. Есть точки: $(ls seeds | tr '\n' ' ')" >&2
+  exit 1
+fi
+if [ ! -d "seeds/$LESSON" ]; then
+  echo "контрольной точки $LESSON нет. Есть: $(ls seeds | tr '\n' ' ')" >&2
+  exit 1
+fi
+compose="docker compose ${N8N_EXAMPLE_PROJECT:+--project-name $N8N_EXAMPLE_PROJECT}"
+$compose exec -T n8n rm -rf /tmp/seed
+$compose cp "seeds/$LESSON" n8n:/tmp/seed
+$compose exec -T n8n n8n import:workflow --separate --input=/tmp/seed/
+echo "загружено состояние к началу урока $LESSON"
+'''
+
 [tasks.test]
-description = "Тесты стека"
-run = 'echo "test не настроен, см. AGENTS.md" >&2; exit 1'
+description = "Поднять n8n в отдельном проекте compose, прогнать контрольные точки, выгрузку и загрузку"
+run = "test/run.sh"
 
 [tasks.check]
 description = "Все проверки, тот же набор, что гоняет CI"

@@ -9,9 +9,23 @@ local fast = new Mapping<String, Step> {
   ["rumdl"] = Builtins.rumdl
   ["typos"] = Builtins.typos
   ["jactionlint"] = Builtins.jactionlint
+  ["compose-schema"] {
+    glob = List("compose.yaml")
+    check = "check-jsonschema --builtin-schema vendor.compose-spec {{files}}"
+  }
+  // Compose для облака живёт строкой внутри cloud-init, схема проверяет его отдельно.
+  ["cloud-compose-schema"] {
+    glob = List("deploy/cloud-init.yaml")
+    check = "yq '.write_files[] | select(.path == \"/opt/n8n/docker-compose.yml\") | .content' {{files}} | check-jsonschema --builtin-schema vendor.compose-spec --default-filetype yaml -"
+  }
 }
 
 local all = (fast) {
+  // Схема скачивается с GitHub, поэтому шаг стоит здесь, а не в pre-commit.
+  ["cloud-init-schema"] {
+    glob = List("deploy/cloud-init.yaml")
+    check = "check-jsonschema --schemafile https://raw.githubusercontent.com/canonical/cloud-init/26.2/cloudinit/config/schemas/schema-cloud-config-v1.json {{files}}"
+  }
   ["lychee"] {
     glob = List("**/*.md")
     check = "lychee --config lychee.toml --no-progress {{files}}"

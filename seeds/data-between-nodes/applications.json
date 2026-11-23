@@ -1,0 +1,41 @@
+{
+  "id": "applications0001",
+  "name": "Приём заявок",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "id": "8a4f2c1e-1d2b-4c3a-9e01-000000000001",
+      "name": "When clicking ‘Execute workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "parameters": {}
+    },
+    {
+      "id": "8a4f2c1e-1d2b-4c3a-9e01-000000000002",
+      "name": "Поля заявки",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 0],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            { "id": "a1", "name": "name", "value": "Марина", "type": "string" },
+            { "id": "a2", "name": "city", "value": "Казань", "type": "string" },
+            { "id": "a3", "name": "interest", "value": "Дизайн", "type": "string" }
+          ]
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [[{ "node": "Поля заявки", "type": "main", "index": 0 }]]
+    }
+  }
+}

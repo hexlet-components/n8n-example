@@ -1,0 +1,21 @@
+# n8n для работы на своём компьютере. Версия та же, что в deploy/cloud-init.yaml,
+# их совпадение проверяет mise run test.
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:2.48.5
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      GENERIC_TIMEZONE: Europe/Moscow
+      TZ: Europe/Moscow
+    volumes:
+      - n8n_data:/home/node/.n8n
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:5678/healthz/readiness"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+
+volumes:
+  n8n_data:

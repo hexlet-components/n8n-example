@@ -1,0 +1,79 @@
+#cloud-config
+# Сценарий первого запуска машины в Яндекс Облаке. Вставляется целиком
+# в поле user-data при создании машины (Ubuntu 26.04 LTS из семейства образов ubuntu-2604-lts, статический публичный IP,
+# открытые порты 80 и 443). Ставит Docker и поднимает n8n за Caddy по адресу
+# https://<ip-через-дефисы>.sslip.io. Лог: /var/log/cloud-init-output.log
+# или серийная консоль машины.
+
+# Чтобы заходить на машину по SSH, раскомментируйте блок и впишите свой ключ.
+# users:
+#   - name: student
+#     groups: sudo
+#     shell: /bin/bash
+#     sudo: "ALL=(ALL) NOPASSWD:ALL"
+#     ssh_authorized_keys:
+#       - ssh-ed25519 AAAA... student@laptop
+
+package_update: true
+packages:
+  - docker.io
+  - docker-compose-v2
+
+write_files:
+  - path: /opt/n8n/docker-compose.yml
+    content: |
+      services:
+        n8n:
+          image: docker.n8n.io/n8nio/n8n:2.48.5
+          restart: unless-stopped
+          environment:
+            N8N_HOST: ${N8N_HOST}
+            N8N_PROTOCOL: https
+            N8N_WEBHOOK_URL: https://${N8N_HOST}/
+            N8N_EDITOR_BASE_URL: https://${N8N_HOST}/
+            N8N_PROXY_HOPS: 1
+            GENERIC_TIMEZONE: Europe/Moscow
+            TZ: Europe/Moscow
+          volumes:
+            - n8n_data:/home/node/.n8n
+        caddy:
+          image: caddy:2.10
+          restart: unless-stopped
+          ports:
+            - "80:80"
+            - "443:443"
+          environment:
+            N8N_HOST: ${N8N_HOST}
+          volumes:
+            - ./Caddyfile:/etc/caddy/Caddyfile:ro
+            - caddy_data:/data
+            - caddy_config:/config
+          depends_on:
+            - n8n
+      volumes:
+        n8n_data:
+        caddy_data:
+        caddy_config:
+  - path: /opt/n8n/Caddyfile
+    content: |
+      {$N8N_HOST} {
+      	reverse_proxy n8n:5678
+      }
+  - path: /opt/n8n/start.sh
+    permissions: "0755"
+    content: |
+      #!/bin/sh
+      set -eu
+      cd /opt/n8n
+      md() { curl -sf --max-time 5 -H 'Metadata-Flavor: Google' "http://169.254.169.254/$1"; }
+      IP=$(md computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip \
+        || md latest/meta-data/public-ipv4 \
+        || curl -sf --max-time 5 https://ifconfig.me)
+      HOST="$(echo "$IP" | tr . -).sslip.io"
+      echo "N8N_HOST=$HOST" > .env
+      docker compose up -d
+      echo "n8n: https://$HOST"
+
+runcmd:
+  - [systemctl, enable, --now, docker]
+  - [/opt/n8n/start.sh]
