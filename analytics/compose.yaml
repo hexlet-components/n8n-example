@@ -1,0 +1,17 @@
+services:
+  report:
+    image: python:3.13-alpine
+    command: ["python", "/app/server.py"]
+    volumes:
+      - ./analytics:/app:ro
+      - report_data:/data
+    ports:
+      - "127.0.0.1:8002:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://localhost:8000/visits.json').close()"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  report_data:

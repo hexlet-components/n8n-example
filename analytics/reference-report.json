@@ -1,0 +1,11 @@
+{
+  "periodStart": "2026-11-16",
+  "periodEnd": "2026-11-23",
+  "rows": [
+    { "source": "yandex", "visits": 20, "leads": 2, "taken": 1, "per100": 10 },
+    { "source": "vk", "visits": 10, "leads": 2, "taken": 2, "per100": 20 },
+    { "source": "email", "visits": 5, "leads": 0, "taken": 0, "per100": 0 },
+    { "source": "Без метки", "visits": 0, "leads": 1, "taken": 0, "per100": null }
+  ],
+  "total": { "source": "Итого", "visits": 35, "leads": 5, "taken": 3, "per100": 14.29 }
+}

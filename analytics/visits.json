@@ -1,0 +1,17 @@
+{
+  "query": {
+    "dimensions": ["ym:s:UTMSource"],
+    "metrics": ["ym:s:visits"],
+    "date1": "2026-11-16",
+    "date2": "2026-11-22"
+  },
+  "data": [
+    { "dimensions": [{ "name": "yandex" }], "metrics": [20] },
+    { "dimensions": [{ "name": "vk" }], "metrics": [10] },
+    { "dimensions": [{ "name": "email" }], "metrics": [5] }
+  ],
+  "total_rows": 3,
+  "total_rows_rounded": false,
+  "sampled": false,
+  "totals": [35]
+}

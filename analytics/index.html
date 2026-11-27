@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Недельный отчёт по каналам</title>
+<style>
+  :root { font-family: "Source Sans 3", system-ui, sans-serif; color: #213c37; background: #f3f5f2; }
+  body { margin: 0; }
+  main { max-width: 58rem; padding: 2.5rem; margin: 6vh auto; }
+  h1 { margin: 0 0 .75rem; font-size: clamp(1.6rem, 4vw, 2.8rem); line-height: 1.15; }
+  #updated { display: block; margin-top: .35rem; color: #4a5c59; }
+  .table-wrap { overflow-x: auto; margin-top: 1.8rem; }
+  table { width: 100%; background: white; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { padding: .85rem 1rem; text-align: right; border-bottom: 1px solid #d2dcd6; }
+  th:first-child, td:first-child { text-align: left; }
+  thead { color: white; background: #185344; font-size: .92rem; }
+  tfoot { background: #e3eee8; font-weight: bold; }
+  @media (max-width: 40rem) { main { margin: 0; padding: 1.5rem .8rem; } th, td { padding: .6rem; } }
+</style>
+<main>
+  <h1>Недельный отчёт по каналам</h1>
+  <p id="period" role="status">Загружаем отчёт…</p>
+  <time id="updated"></time>
+  <div class="table-wrap" hidden>
+    <table>
+      <thead>
+        <tr><th>Канал</th><th>Визиты</th><th>Заявки</th><th>Взяты в работу</th><th>Заявки на 100 визитов</th></tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot></tfoot>
+    </table>
+  </div>
+</main>
+<script>
+  const number = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 });
+  const day = new Intl.DateTimeFormat('ru-RU', { dateStyle: 'long', timeZone: 'UTC' });
+  const timestamp = new Intl.DateTimeFormat('ru-RU', {
+    dateStyle: 'short', timeStyle: 'medium', timeZone: 'Europe/Moscow'
+  });
+
+  function addRow(section, record) {
+    const row = section.insertRow();
+    row.insertCell().textContent = record.source;
+    for (const key of ['visits', 'leads', 'taken', 'per100']) {
+      row.insertCell().textContent = record[key] === null ? '—' : number.format(record[key]);
+    }
+  }
+
+  async function showReport() {
+    const period = document.querySelector('#period');
+    try {
+      const response = await fetch('/reports/latest');
+      if (response.status === 404) {
+        period.textContent = 'Первый отчёт ещё не опубликован.';
+        return;
+      }
+      if (!response.ok) throw new Error();
+      const report = await response.json();
+      const firstDay = new Date(report.periodStart + 'T00:00:00Z');
+      const lastDay = new Date(report.periodEnd + 'T00:00:00Z');
+      lastDay.setUTCDate(lastDay.getUTCDate() - 1);
+      period.textContent = day.formatRange(firstDay, lastDay);
+      const updated = document.querySelector('#updated');
+      updated.dateTime = report.updatedAt;
+      updated.textContent = 'Обновлено ' + timestamp.format(new Date(report.updatedAt)) + ' МСК';
+      for (const record of report.rows) addRow(document.querySelector('tbody'), record);
+      addRow(document.querySelector('tfoot'), report.total);
+      document.querySelector('.table-wrap').hidden = false;
+    } catch {
+      period.textContent = 'Не удалось получить отчёт. Обновите страницу.';
+    }
+  }
+  showReport();
+</script>
+</html>
