@@ -1,0 +1,53 @@
+{
+  "name": "Обработка заявки",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "metrika-processed",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "name": "Вебхук",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5de6dc1d-e485-4146-8561-2e2166e0c8fa",
+      "webhookId": "220448ab-9216-407f-8f98-f9cd23f21020"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $input.first().json.body }];"
+      },
+      "name": "Запись заявки",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "0192b48b-2745-4179-95be-d1facebef300"
+    }
+  ],
+  "connections": {
+    "Вебхук": {
+      "main": [
+        [
+          {
+            "node": "Запись заявки",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "id": "MetrikaProcessed"
+}

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="counter.js"></script>
+<title>Консультация в школе</title>
+</head>
+<body>
+<h1>Консультация в школе</h1>
+<nav><a id="promo" href="form.html">Запись на консультацию</a> · <a href="index.html">Главная</a></nav>
+<form action="/school/apply" method="post">
+<label>Код услуги <select name="service"><option>english</option><option>media</option></select></label>
+<label><input type="checkbox" name="refuse" value="yes"> Получить учебный отказ</label>
+<button>Отправить заявку</button>
+</form>
+<p role="status"></p>
+<script src="form.js"></script>
+</body>
+</html>

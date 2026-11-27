@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="counter.js"></script>
+<title>Регистрация на мероприятие</title>
+</head>
+<body>
+<h1>Регистрация на мероприятие</h1>
+<nav><a id="schedule" href="form.html">Расписание мероприятия</a> · <a href="index.html">Главная</a></nav>
+<form action="/event/apply" method="post">
+<label>Код секции <select name="section"><option>design</option><option>media</option></select></label>
+<label><input type="checkbox" name="refuse" value="yes"> Получить учебный отказ</label>
+<button>Отправить заявку</button>
+</form>
+<p role="status"></p>
+<script src="form.js"></script>
+</body>
+</html>
