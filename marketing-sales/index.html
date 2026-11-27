@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Встреча организаторов</title>
+<main>
+  <h1>Регистрация на встречу организаторов</h1>
+  <form action="/register" method="post">
+    <p><label>Почта для регистрации <input type="email" name="email" required></label></p>
+    <p><label><input type="checkbox" name="marketingConsent" value="yes"> Хочу получать материалы и новости встреч по почте</label></p>
+    <button>Зарегистрироваться</button>
+  </form>
+</main>
+<script>
+  const registrationId = crypto.randomUUID();
+  const campaignId = new URLSearchParams(location.search).get('campaignId') ?? '';
+  let registeredAt;
+
+  document.querySelector('form').addEventListener('formdata', ({ formData }) => {
+    registeredAt ??= new Date().toISOString();
+    formData.set('registrationId', registrationId);
+    formData.set('registeredAt', registeredAt);
+    formData.set('campaignId', campaignId);
+  });
+</script>
+</html>

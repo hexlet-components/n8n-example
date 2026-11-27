@@ -1,0 +1,124 @@
+{
+  "name": "Регистрация на встречу",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "event-registration",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Вебхук",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "12e457a3-628a-46b4-af2d-11a2cdc8763d",
+      "webhookId": "0ca00106-7542-4c45-9fd8-81be7f3b1dfa"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $input.first().json.body }];"
+      },
+      "name": "Данные регистрации",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "2d991322-0ba2-4003-ad3a-e43230749298"
+    },
+    {
+      "id": "b70d2523-8ebf-4331-98a7-2f7b13468a6e",
+      "name": "Сохранить регистрацию",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "registrations",
+          "mode": "name"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "registrationId",
+              "condition": "eq",
+              "keyValue": "={{ $json.registrationId }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "fe0b85bc-9aa7-4ae6-840b-5b06c62f8fb4",
+      "name": "Ответ форме",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        720,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { registrationId: $json.registrationId } }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Вебхук": {
+      "main": [
+        [
+          {
+            "node": "Данные регистрации",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Данные регистрации": {
+      "main": [
+        [
+          {
+            "node": "Сохранить регистрацию",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Сохранить регистрацию": {
+      "main": [
+        [
+          {
+            "node": "Ответ форме",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all"
+  },
+  "active": false,
+  "id": "EventRegistration"
+}
